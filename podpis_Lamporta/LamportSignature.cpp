@@ -31,3 +31,15 @@ void LamportSignature::error(){
   ERR_print_errors_fp(stderr);
   abort();
 }
+void LamportSignature::keyGenerate(){
+  cout<<endl<<"Generowanie kluczy"<<endl;
+  unsigned char X[256];
+  RAND_poll();
+  cout<<"Klucz X:"<<endl;
+  for(int i=0;i<256;i++)
+  {
+    RAND_bytes(&X[i],sizeof(unsigned char));
+    cout<<X[i];
+  }
+  cout<<endl;
+}

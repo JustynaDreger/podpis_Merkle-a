@@ -3,6 +3,7 @@
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
+#include <openssl/rand.h>
 using namespace std;
 class LamportSignature
 {
@@ -11,4 +12,5 @@ class LamportSignature
   void error();
   public:
     LamportSignature();
+    void keyGenerate();
 };

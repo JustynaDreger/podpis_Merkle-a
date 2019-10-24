@@ -1,14 +1,12 @@
 #include "LamportSignature.h"
 
-LamportSignature::LamportSignature()
-{
+LamportSignature::LamportSignature(){
   string M;
   cout<<"Podaj wiadomosc :"<<endl;
   cin>>M;
   d_M(M);
 }
-void LamportSignature::d_M(string m)
-{
+void LamportSignature::d_M(string m){
   cout<<"Obliczanie skrotu"<<endl;
   char M[m.size()+1];
   strcpy(M,m.c_str());
@@ -70,15 +68,26 @@ void LamportSignature::keyYGenerate(){
   }*/
 }
 void LamportSignature::signatureGenerate(){
-  int k=0;
+  int k=0,l=0;
+  s = new unsigned char*[N*8];
   for(int i=0; i<N;i++){
     bitset<8> D(d[i]);
     for(int j = 7; j>=0; j--){
-      if(D[j] == 0)
-        printf("%02x\n", X[k][0]);//w przypisaniu caly wiersz
-      else
-        printf("%02x\n", X[k+1][0]);
+      s[l] = new unsigned char[N];
+      if(D[j] == 0){
+        memcpy(s[l],&X[k][0],N);
+      }
+      else{
+        memcpy(s[l],&X[k+1][0],N);
+      }
       k+=2;
+      l++;
     }
+  }
+  cout<<endl<<endl<<"PODPIS"<<endl;
+  for (int i = 0; i < N*8; i++){
+    for(int j = 0; j < N; j++)
+      printf("%02x", s[i][j]);
+      cout<<endl;
   }
 }

@@ -6,5 +6,6 @@ using namespace std;
 int main(int argc, char *argv[]){
   LamportSignature sign;
   sign.keyGenerate();
+  sign.signatureGenerate();
   return 0;
 }

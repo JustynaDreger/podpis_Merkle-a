@@ -47,7 +47,7 @@ void LamportSignature::keyXGenerate(){
     for(int j = 0; j < N; j++)
       printf("%02x", X[i][j]);
       cout<<endl;
-  }/*
+  }*/
 }
 void LamportSignature::keyYGenerate(){
   //cout<<endl<<"Klucz Y :"<<endl;

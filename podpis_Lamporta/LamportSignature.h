@@ -28,4 +28,9 @@ class LamportSignature
     LamportSignature();
     void keyGenerate();
     void signatureGenerate();
+    void signatureVerifite();
+    void showKeyX();
+    void showKeyY();
+    void showSignature();
+    void showDigest();
 };

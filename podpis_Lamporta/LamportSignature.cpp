@@ -21,10 +21,6 @@ void LamportSignature::d_M(string m){
   if(EVP_DigestFinal_ex(ctx,d,&d_len) != 1)
     error();
   EVP_MD_CTX_free(ctx);
-  cout<<"Skrot :"<<endl;
-  for (int i = 0; i < N; i++)
-      printf("%02x", d[i]);
-  cout<<endl<<d_len<<endl;
 }
 void LamportSignature::error(){
   ERR_print_errors_fp(stderr);
@@ -37,18 +33,11 @@ void LamportSignature::keyGenerate(){
 }
 void LamportSignature::keyXGenerate(){
   RAND_poll();
-  //cout<<"Klucz X :"<<endl;
   for(int i=0;i<N2;i++){
     RAND_bytes(X[i],N);
   }
-  /*for (int i = 0; i < 16; i++){
-    for(int j = 0; j < N; j++)
-      printf("%02x", X[i][j]);
-      cout<<endl;
-  }*/
 }
 void LamportSignature::keyYGenerate(){
-  //cout<<endl<<"Klucz Y :"<<endl;
   for(int i =0; i < N2; i++){
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     if(ctx == NULL)
@@ -61,11 +50,6 @@ void LamportSignature::keyYGenerate(){
       error();
     EVP_MD_CTX_free(ctx);
   }
-  /*for (int i = 0; i < N2; i++){
-    for(int j = 0; j < N; j++)
-      printf("%02x", Y[i][j]);
-      cout<<endl;
-  }*/
 }
 void LamportSignature::signatureGenerate(){
   int k=0,l=0;
@@ -84,6 +68,60 @@ void LamportSignature::signatureGenerate(){
       l++;
     }
   }
+}
+void LamportSignature::signatureVerifite(){
+  cout<<endl<<"Weryfikacja podpisu"<<endl;
+  unsigned char fs[N*8][N];
+  unsigned int fs_len;
+  for(int i =0; i < N*8; i++){
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    if(ctx == NULL)
+      error();
+    if(EVP_DigestInit_ex(ctx,EVP_blake2s256(),NULL) != 1)
+      error();
+    if(EVP_DigestUpdate(ctx,s[i],N) != 1)
+      error();
+    if(EVP_DigestFinal_ex(ctx,fs[i],&fs_len) != 1)
+      error();
+    EVP_MD_CTX_free(ctx);
+  }
+  int fs_num = 0,k = 0;
+  for(int i = 0; i<N; i++){
+    bitset<8> D(d[i]);
+    for(int j = 7; j>=0; j--){
+      int l = (int)D[j];
+      if(memcmp(fs[fs_num],Y[k+l],N) != 0){
+        cout<<"Podpis jest BŁĘDNY"<<endl;
+        return;
+      }
+      fs_num++;
+      k+=2;
+    }
+  }
+  cout<<"Podpis jest POPRAWNY"<<endl;
+}
+void LamportSignature::showDigest(){
+  cout<<"Skrot :"<<endl;
+  for (int i = 0; i < N; i++)
+      printf("%02x", d[i]);
+}
+void LamportSignature::showKeyX(){
+  cout<<"Klucz X:"<<endl;
+  for (int i = 0; i < N2; i++){
+    for(int j = 0; j < N; j++)
+      printf("%02x", X[i][j]);
+    cout<<endl;
+  }
+}
+void LamportSignature::showKeyY(){
+  cout<<"Klucz Y:"<<endl;
+  for (int i = 0; i < N2; i++){
+    for(int j = 0; j < N; j++)
+      printf("%02x", Y[i][j]);
+    cout<<endl;
+  }
+}
+void LamportSignature::showSignature(){
   cout<<endl<<endl<<"PODPIS"<<endl;
   for (int i = 0; i < N*8; i++){
     for(int j = 0; j < N; j++)

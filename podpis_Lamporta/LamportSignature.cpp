@@ -52,12 +52,13 @@ void LamportSignature::keyYGenerate(){
   }
 }
 void LamportSignature::signatureGenerate(){
+  cout<<"Generowanie podpisu"<<endl;
   int k=0,l=0;
-  s = new unsigned char*[N*8];
+  //s = new unsigned char*[N*8];
   for(int i=0; i<N;i++){
     bitset<8> D(d[i]);
     for(int j = 7; j>=0; j--){
-      s[l] = new unsigned char[N];
+      //s[l] = new unsigned char[N];
       if(D[j] == 0){
         memcpy(s[l],&X[k][0],N);
       }
@@ -68,9 +69,12 @@ void LamportSignature::signatureGenerate(){
       l++;
     }
   }
+  saveIntoFile();
 }
-void LamportSignature::signatureVerifite(){
+void LamportSignature::signatureVerifite(string fileName){
   cout<<endl<<"Weryfikacja podpisu"<<endl;
+  readFromFile(fileName);
+
   unsigned char fs[N*8][N];
   unsigned int fs_len;
   for(int i =0; i < N*8; i++){
@@ -126,6 +130,24 @@ void LamportSignature::showSignature(){
   for (int i = 0; i < N*8; i++){
     for(int j = 0; j < N; j++)
       printf("%02x", s[i][j]);
-      cout<<endl;
+    cout<<endl;
   }
+}
+void LamportSignature::saveIntoFile(){
+  FILE *fp = fopen("podpis.bin","wb");
+  fwrite(s,sizeof(char),N*8*N,fp);
+  fclose(fp);
+  cout<<"Podpis zapisano do pliku: podpis.bin"<<endl;
+}
+void LamportSignature::readFromFile(string fileName){
+  //unsigned char ss[N*8][N];
+  FILE *fp = fopen(fileName.c_str(),"rb");
+  fread(&s,sizeof(char),N*8*N,fp);
+  fclose(fp);
+  /*cout<<endl<<endl<<"Z pliku"<<endl;
+  for (int i = 0; i < N*8; i++){
+    for(int j = 0; j < N; j++)
+      printf("%02x", ss[i][j]);
+    cout<<endl;
+  }*/
 }

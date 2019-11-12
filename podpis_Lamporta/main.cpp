@@ -10,7 +10,8 @@ int main(int argc, char *argv[]){
   //sign.showKeyX();
   //sign.showKeyY();
   sign.signatureGenerate();
-  //sign.showSignature();
-  sign.signatureVerifite();
+  sign.showSignature();
+  sign.signatureVerifite("podpis.bin");
+
   return 0;
 }

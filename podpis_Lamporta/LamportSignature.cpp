@@ -1,10 +1,19 @@
 #include "LamportSignature.h"
 
-LamportSignature::LamportSignature(){
+LamportSignature::LamportSignature(string messageFileName){
   string M;
-  cout<<"Podaj wiadomosc :"<<endl;
-  cin>>M;
+  M = readMessageFromFile(messageFileName);
+  cout<<"Wiadomość:"<<endl<<M<<endl;
   d_M(M);
+}
+string LamportSignature::readMessageFromFile(string fileName){
+  string s1, s2;
+  ifstream file(fileName);
+  while(getline(file,s1)){
+    s2 = s2 + s1 + '\n';
+  }
+  file.close();
+  return s2;
 }
 void LamportSignature::d_M(string m){
   cout<<"Obliczanie skrotu"<<endl;
@@ -30,6 +39,7 @@ void LamportSignature::keyGenerate(){
   cout<<endl<<"Generowanie kluczy"<<endl;
   keyXGenerate();
   keyYGenerate();
+  //saveIntoDataBase();
 }
 void LamportSignature::keyXGenerate(){
   RAND_poll();
@@ -69,11 +79,11 @@ void LamportSignature::signatureGenerate(){
       l++;
     }
   }
-  saveIntoFile();
+  saveSignatureIntoFile();
 }
-void LamportSignature::signatureVerifite(string fileName){
+void LamportSignature::signatureVerify(string fileName){
   cout<<endl<<"Weryfikacja podpisu"<<endl;
-  readFromFile(fileName);
+  readSignatureFromFile(fileName);
 
   unsigned char fs[N*8][N];
   unsigned int fs_len;
@@ -133,21 +143,76 @@ void LamportSignature::showSignature(){
     cout<<endl;
   }
 }
-void LamportSignature::saveIntoFile(){
+void LamportSignature::saveSignatureIntoFile(){
   FILE *fp = fopen("podpis.bin","wb");
   fwrite(s,sizeof(char),N*8*N,fp);
   fclose(fp);
   cout<<"Podpis zapisano do pliku: podpis.bin"<<endl;
 }
-void LamportSignature::readFromFile(string fileName){
-  //unsigned char ss[N*8][N];
+void LamportSignature::readSignatureFromFile(string fileName){
   FILE *fp = fopen(fileName.c_str(),"rb");
   fread(&s,sizeof(char),N*8*N,fp);
   fclose(fp);
-  /*cout<<endl<<endl<<"Z pliku"<<endl;
-  for (int i = 0; i < N*8; i++){
-    for(int j = 0; j < N; j++)
-      printf("%02x", ss[i][j]);
-    cout<<endl;
-  }*/
+}
+void LamportSignature::saveIntoDataBase(){
+  EJDB_OPTS opts = {
+    .kv = {
+      .path = "LamportKeys.db",
+      .oflags = IWKV_TRUNC //0
+    }
+  };
+  EJDB db;
+  int64_t id;
+  JQL q = 0;
+  JBL jbl = 0;
+
+  iwrc rc = ejdb_init();// inicjalizacja
+  RCHECK(rc);
+
+  rc = ejdb_open(&opts, &db);//otwarcie pliku z baza (opcje otwarcia, uchwyt do bazy)
+  RCHECK(rc);
+
+  string sId;
+  sId = to_string(1);
+  string sKey(reinterpret_cast<char*>(Y[0]),N);
+  for(int i = 1; i < N2; i++){
+    string temp(reinterpret_cast<char*>(Y[i]),N);
+    sKey=sKey+temp;
+  }
+  cout<<sKey<<endl<<endl;
+  //replace( sKey.begin(), sKey.end(), "\"", "\\"");
+  //replace( sKey.begin(), sKey.end(), "\'", "\\'");
+  string c ="{\"id\":"+sId+", \"key\":\""+sKey+"\"}";
+  rc = jbl_from_json(&jbl, c.c_str());
+  RCGO(rc, finish);
+  rc = ejdb_put_new(db, "Y", jbl, &id);
+  RCGO(rc, finish);
+  jbl_destroy(&jbl);
+    // Now execute a query
+  rc =  jql_create(&q, "Y", "/**");
+  RCGO(rc, finish);
+  EJDB_EXEC ux = {
+    .db = db,
+    .q = q,
+    .visitor = documents_visitor
+  };
+  //rc = jql_set_i64(q, "id", 0, 0);
+  //RCGO(rc, finish);
+
+  rc = ejdb_exec(&ux);
+
+
+finish:
+  if (q) jql_destroy(&q);
+  if (jbl) jbl_destroy(&jbl);
+  ejdb_close(&db);
+  RCHECK(rc);
+
+}
+void LamportSignature::readFromDataBase(){
+
+}
+static iwrc LamportSignature::documents_visitor(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step) {
+  // Print document to stderr
+  return jbl_as_json(doc->raw, jbl_fstream_json_printer, stderr, JBL_PRINT_PRETTY);
 }

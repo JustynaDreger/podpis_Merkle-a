@@ -1,18 +1,26 @@
 #include <iostream>
 #include <cstring>
 #include <string>
+#include <algorithm>
 #include <iomanip>
 #include <bitset>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+#include <ejdb2/ejdb2.h>
 
 using namespace std;
 #define N 32
 #define N2 N*16
+#define RCHECK(rc_)          \
+  if (rc_) {                 \
+    iwlog_ecode_error3(rc_); \
+    return 1;                \
+  }
 class LamportSignature
 {
   unsigned char d[N];
@@ -25,13 +33,17 @@ class LamportSignature
   void error();
   void keyXGenerate();
   void keyYGenerate();
-  void saveIntoFile();
-  void readFromFile(string fileName);
+  void saveSignatureIntoFile();
+  void saveIntoDataBase();
+  void readSignatureFromFile(string fileName);
+  void readFromDataBase();
+  string readMessageFromFile(string fileName);
+  static iwrc documents_visitor(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step);
   public:
-    LamportSignature();
+    LamportSignature(string messageFileName);
     void keyGenerate();
     void signatureGenerate();
-    void signatureVerifite(string fileName);
+    void signatureVerify(string fileName);
     void showKeyX();
     void showKeyY();
     void showSignature();

@@ -21,6 +21,8 @@ using namespace std;
     iwlog_ecode_error3(rc_); \
     return 1;                \
   }
+static int globalId;
+static unsigned char buff[(N*3*90)+19];
 class LamportSignature
 {
   unsigned char d[N];
@@ -33,14 +35,18 @@ class LamportSignature
   void error();
   void keyXGenerate();
   void keyYGenerate();
+  string convertKeyToString();
+  void convertKeyToUchar(string sKey);
   void saveSignatureIntoFile();
   void saveIntoDataBase();
   void readSignatureFromFile(string fileName);
   void readFromDataBase();
   string readMessageFromFile(string fileName);
   static iwrc documents_visitor(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step);
+  static iwrc documents_visitor2(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step);
   public:
-    LamportSignature(string messageFileName);
+    LamportSignature(string messageFileName); // tworzenie podpisu
+    LamportSignature(string messageFileName,string signatureFile); //weryfikacja podpisu
     void keyGenerate();
     void signatureGenerate();
     void signatureVerify(string fileName);

@@ -31,7 +31,6 @@ class LamportSignature
   unsigned int d_len;
   unsigned int y_len;
 
-  char *buff;
   void d_M(string M);
   void error();
   void keyXGenerate();

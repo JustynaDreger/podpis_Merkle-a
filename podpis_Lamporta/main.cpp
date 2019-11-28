@@ -4,7 +4,7 @@
 #include "LamportSignature.h"
 using namespace std;
 int main(int argc, char *argv[]){
-
+//generowanie podpisu wiadomosci tekst.txt, zapisanego w pliku podpis.bin
   LamportSignature sign("tekst.txt");
   //sign.showDigest();
   sign.keyGenerate();
@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
   //sign.showKeyY();
   sign.signatureGenerate();
   //sign.showSignature();
-
+//weryfikacja podpisu 
   LamportSignature sign2("tekst.txt","podpis.bin");
   //sign2.showKeyY();
   sign2.signatureVerify("podpis.bin");

@@ -3,13 +3,13 @@
 LamportSignature::LamportSignature(string messageFileName){
   string M;
   M = readMessageFromFile(messageFileName);
-  cout<<"Wiadomość:"<<endl<<M<<endl;
+  //cout<<"Wiadomość:"<<endl<<M<<endl;
   d_M(M);
 }
 LamportSignature::LamportSignature(string messageFileName,string signatureFile){
   string M;
   M = readMessageFromFile(messageFileName);
-  cout<<"Wiadomość:"<<endl<<M<<endl;
+  //cout<<"Wiadomość:"<<endl<<M<<endl;
   d_M(M);
   readFromDataBase();
 }
@@ -57,7 +57,6 @@ void LamportSignature::keyXGenerate(){
   for(int i=0;i<N2;i++){
     RAND_bytes(X[i],N);
   }
-  cout<<"TUUU"<<endl;
 }
 void LamportSignature::keyYGenerate(){
   for(int i =0; i < N2; i++){
@@ -76,11 +75,9 @@ void LamportSignature::keyYGenerate(){
 void LamportSignature::signatureGenerate(){
   cout<<"Generowanie podpisu"<<endl;
   int k=0,l=0;
-  //s = new unsigned char*[N*8];
   for(int i=0; i<N;i++){
     bitset<8> D(d[i]);
     for(int j = 7; j>=0; j--){
-      //s[l] = new unsigned char[N];
       if(D[j] == 0){
         memcpy(s[l],&X[k][0],N);
       }
@@ -112,8 +109,8 @@ void LamportSignature::signatureVerify(string fileName){
     EVP_MD_CTX_free(ctx);
   }
   int fs_num = 0,k = 0;
-  //for(int i = 0; i<N; i++){
-    bitset<8> D(d[0]);
+  for(int i = 0; i<N; i++){
+    bitset<8> D(d[i]);
     for(int j = 7; j>=0; j--){
       int l = (int)D[j];
       if(memcmp(fs[fs_num],Y[k+l],N) != 0){
@@ -123,7 +120,7 @@ void LamportSignature::signatureVerify(string fileName){
       fs_num++;
       k+=2;
     }
-  //}
+  }
   cout<<"Podpis jest POPRAWNY"<<endl;
 }
 void LamportSignature::showDigest(){
@@ -170,30 +167,25 @@ string LamportSignature::convertKeyToString(){
   string wynik="";
   string temp1,temp2;
   int a;
-  for(int i=0;i<90;i++){
+  for(int i=0;i<N2;i++){
     for(int j=0;j<N;j++){
-      //cout<<(int)Y[i][j]<<" ";
       temp1=to_string((int)Y[i][j]);
       a=strlen(temp1.c_str());
-      //cout<<a<<endl;
-      //cout<<strlen(temp1.c_str())<<endl;
       if(a<3){
         for(int k=0;k<(3-a);k++)
           temp2='0'+temp2;
-        //cout<<temp2<<endl;
         wynik.append(temp2);
         temp2="";
       }
       wynik.append(temp1);
     }
   }
-  cout<<endl;
   return wynik;
 }
 void LamportSignature::convertKeyToUchar(string sKey){
   string temp;
   int k=0;
-  for(int i=0;i<90;i++){
+  for(int i=0;i<N2;i++){
     for(int j=0;j<N;j++){
       temp = sKey.substr(k, 3);
       Y[i][j]=(unsigned char)(stoi(temp));
@@ -226,18 +218,12 @@ void LamportSignature::saveIntoDataBase(){
     .q = q,
     .visitor = documents_visitor
   };
-
   rc = ejdb_exec(&ux);
   string sId;
   if(globalId==0) sId=to_string(1);
   else sId =to_string((globalId/2)+1);
-  //string sKey(reinterpret_cast<char*>(Y[0]),N);
   string sKey = convertKeyToString();
-  /*for(int i = 1; i < N2; i++){
-    string temp(reinterpret_cast<char*>(Y[i]),N);
-    sKey=sKey+temp;
-  }*/
-  cout<<endl<<sId<<endl<<sKey<<endl<<endl;
+  //cout<<endl<<sId<<endl<<sKey<<endl<<endl;
   string c ="{\"id\":\""+sId+"\", \"key\":\""+sKey+"\"}";
   rc = jbl_from_json(&jbl, c.c_str());
   RCGO(rc, finish);
@@ -278,27 +264,19 @@ void LamportSignature::readFromDataBase(){
   };
   rc = jql_set_i64(q, "id", 0, 1);
   RCGO(rc, finish);
-  rc = ejdb_exec(&ux);
-
-  buff = new char[(N*3*90)+19];
-
-  //freopen("/dev/null","a",stdout);
   freopen("proba.txt","a",stdout);
-  //setbuf(stdout,buff);
   // Now execute the query
   rc = ejdb_exec(&ux);
   freopen ("/dev/tty", "a", stdout);
-  cout<<"JUZ"<<endl;
-  //cout<<endl<<endl<<"Przechwycono:"<<endl<<buff<<endl;
-  //string pom = (reinterpret_cast<char*>(buff));
-  //string keyPom=pom.substr(17,N*3);
-  //cout<<keyPom<<endl;
-  //convertKeyToUchar(keyPom);
+  string pom;
+  ifstream file("proba.txt");
+  getline(file,pom);
+  //cout<<"POM->"<<endl<<pom<<endl;
+  string keyPom=pom.substr(17,N*3*N2);
+  //cout<<endl<<endl<<keyPom<<endl;
+  convertKeyToUchar(keyPom);
 
-  //cout<<"BUFF_>"<<pom.length()<<endl;
-
-  delete[] buff;
-
+  remove("proba.txt");
 finish:
   if (q) jql_destroy(&q);
   if (jbl) jbl_destroy(&jbl);

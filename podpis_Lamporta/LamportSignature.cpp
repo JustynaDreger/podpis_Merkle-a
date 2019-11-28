@@ -11,6 +11,7 @@ LamportSignature::LamportSignature(string messageFileName,string signatureFile){
   M = readMessageFromFile(messageFileName);
   //cout<<"Wiadomość:"<<endl<<M<<endl;
   d_M(M);
+  readSignatureFromFile(signatureFile);
   readFromDataBase();
 }
 LamportSignature::~LamportSignature(){
@@ -50,7 +51,6 @@ void LamportSignature::keyGenerate(){
   cout<<endl<<"Generowanie kluczy"<<endl;
   keyXGenerate();
   keyYGenerate();
-  saveIntoDataBase();
 }
 void LamportSignature::keyXGenerate(){
   RAND_poll();
@@ -88,12 +88,11 @@ void LamportSignature::signatureGenerate(){
       l++;
     }
   }
+  saveIntoDataBase();
   saveSignatureIntoFile();
 }
 void LamportSignature::signatureVerify(string fileName){
   cout<<endl<<"Weryfikacja podpisu"<<endl;
-  readSignatureFromFile(fileName);
-
   unsigned char fs[N*8][N];
   unsigned int fs_len;
   for(int i =0; i < N*8; i++){
@@ -154,12 +153,14 @@ void LamportSignature::showSignature(){
 }
 void LamportSignature::saveSignatureIntoFile(){
   FILE *fp = fopen("podpis.bin","wb");
+  fprintf(fp,"%d\n",keyId);
   fwrite(s,sizeof(char),N*8*N,fp);
   fclose(fp);
   cout<<"Podpis zapisano do pliku: podpis.bin"<<endl;
 }
 void LamportSignature::readSignatureFromFile(string fileName){
   FILE *fp = fopen(fileName.c_str(),"rb");
+  fscanf(fp,"%d\n",&keyId);
   fread(&s,sizeof(char),N*8*N,fp);
   fclose(fp);
 }
@@ -197,7 +198,7 @@ void LamportSignature::saveIntoDataBase(){
   EJDB_OPTS opts = {
     .kv = {
       .path = "LamportKeys.db",
-      .oflags =IWKV_TRUNC
+      .oflags =0//IWKV_TRUNC
     }
   };
   EJDB db;
@@ -218,10 +219,13 @@ void LamportSignature::saveIntoDataBase(){
     .q = q,
     .visitor = documents_visitor
   };
+  freopen("/dev/null","a",stderr);
   rc = ejdb_exec(&ux);
+  freopen ("/dev/tty", "a", stderr);
   string sId;
+  keyId = (globalId/2)+1;
   if(globalId==0) sId=to_string(1);
-  else sId =to_string((globalId/2)+1);
+  else sId =to_string(keyId);
   string sKey = convertKeyToString();
   //cout<<endl<<sId<<endl<<sKey<<endl<<endl;
   string c ="{\"id\":\""+sId+"\", \"key\":\""+sKey+"\"}";
@@ -262,7 +266,7 @@ void LamportSignature::readFromDataBase(){
     .q = q,
     .visitor = documents_visitor2
   };
-  rc = jql_set_i64(q, "id", 0, 1);
+  rc = jql_set_i64(q, "id", 0, keyId);
   RCGO(rc, finish);
   freopen("proba.txt","a",stdout);
   // Now execute the query
@@ -276,7 +280,7 @@ void LamportSignature::readFromDataBase(){
   //cout<<endl<<endl<<keyPom<<endl;
   convertKeyToUchar(keyPom);
 
-  remove("proba.txt");
+  if(remove("proba.txt")!=0) cout<<"Problem z plikiem"<<endl;
 finish:
   if (q) jql_destroy(&q);
   if (jbl) jbl_destroy(&jbl);

@@ -30,7 +30,7 @@ class LamportSignature
   unsigned char s[N*8][N];
   unsigned int d_len;
   unsigned int y_len;
-
+  int keyId;
   void d_M(string M);
   void error();
   void keyXGenerate();

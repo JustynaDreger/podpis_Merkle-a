@@ -22,15 +22,16 @@ using namespace std;
     return 1;                \
   }
 static int globalId;
-static unsigned char buff[(N*3*90)+19];
 class LamportSignature
 {
-  unsigned char d[N];
+  unsigned char *d;// dlugosc N
   unsigned char X[N2][N];
   unsigned char Y[N2][N];
   unsigned char s[N*8][N];
   unsigned int d_len;
   unsigned int y_len;
+
+  char *buff;
   void d_M(string M);
   void error();
   void keyXGenerate();
@@ -54,4 +55,5 @@ class LamportSignature
     void showKeyY();
     void showSignature();
     void showDigest();
+    ~LamportSignature();
 };

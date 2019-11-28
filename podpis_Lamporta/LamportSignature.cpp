@@ -13,6 +13,9 @@ LamportSignature::LamportSignature(string messageFileName,string signatureFile){
   d_M(M);
   readFromDataBase();
 }
+LamportSignature::~LamportSignature(){
+  delete[] d;
+}
 string LamportSignature::readMessageFromFile(string fileName){
   string s1, s2;
   ifstream file(fileName);
@@ -27,6 +30,7 @@ void LamportSignature::d_M(string m){
   char M[m.size()+1];
   strcpy(M,m.c_str());
 
+  d = new unsigned char[N];
   EVP_MD_CTX *ctx = EVP_MD_CTX_new();
   if(ctx == NULL)
     error();
@@ -53,6 +57,7 @@ void LamportSignature::keyXGenerate(){
   for(int i=0;i<N2;i++){
     RAND_bytes(X[i],N);
   }
+  cout<<"TUUU"<<endl;
 }
 void LamportSignature::keyYGenerate(){
   for(int i =0; i < N2; i++){
@@ -274,16 +279,25 @@ void LamportSignature::readFromDataBase(){
   rc = jql_set_i64(q, "id", 0, 1);
   RCGO(rc, finish);
   rc = ejdb_exec(&ux);
-  freopen("/dev/null","a",stdout);
-  setbuf(stdout,buff);
+
+  buff = new char[(N*3*90)+19];
+
+  //freopen("/dev/null","a",stdout);
+  freopen("proba.txt","a",stdout);
+  //setbuf(stdout,buff);
   // Now execute the query
   rc = ejdb_exec(&ux);
   freopen ("/dev/tty", "a", stdout);
-  cout<<endl<<endl<<"Przechwycono:"<<endl<<buff<<endl;
+  cout<<"JUZ"<<endl;
+  //cout<<endl<<endl<<"Przechwycono:"<<endl<<buff<<endl;
   //string pom = (reinterpret_cast<char*>(buff));
   //string keyPom=pom.substr(17,N*3);
   //cout<<keyPom<<endl;
   //convertKeyToUchar(keyPom);
+
+  //cout<<"BUFF_>"<<pom.length()<<endl;
+
+  delete[] buff;
 
 finish:
   if (q) jql_destroy(&q);

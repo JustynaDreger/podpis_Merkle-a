@@ -113,6 +113,10 @@ void LamportSignature::signatureVerify(string fileName){
     for(int j = 7; j>=0; j--){
       int l = (int)D[j];
       if(memcmp(fs[fs_num],Y[k+l],N) != 0){
+        cout<<"FS[fs_num]";
+        printf("%02x\n",fs[fs_num][0]);
+        cout<<"Y[k+l]";
+        printf("%02x\n", Y[k+l][0]);
         cout<<"Podpis jest BŁĘDNY"<<endl;
         return;
       }
@@ -227,7 +231,6 @@ void LamportSignature::saveIntoDataBase(){
   if(globalId==0) sId=to_string(1);
   else sId =to_string(keyId);
   string sKey = convertKeyToString();
-  //cout<<endl<<sId<<endl<<sKey<<endl<<endl;
   string c ="{\"id\":\""+sId+"\", \"key\":\""+sKey+"\"}";
   rc = jbl_from_json(&jbl, c.c_str());
   RCGO(rc, finish);
@@ -245,7 +248,7 @@ void LamportSignature::readFromDataBase(){
   EJDB_OPTS opts = {
     .kv = {
       .path = "LamportKeys.db",
-      .oflags =0//IWKV_TRUNC
+      .oflags =0
     }
   };
   EJDB db;
@@ -275,8 +278,9 @@ void LamportSignature::readFromDataBase(){
   string pom;
   ifstream file("proba.txt");
   getline(file,pom);
-  //cout<<"POM->"<<endl<<pom<<endl;
-  string keyPom=pom.substr(17,N*3*N2);
+  string keyS = to_string(keyId);
+  //cout<<keyId<<"\tDŁ -> "<<keyS.length()<<endl;
+  string keyPom=pom.substr(16+keyS.length(),N*3*N2);
   //cout<<endl<<endl<<keyPom<<endl;
   convertKeyToUchar(keyPom);
 

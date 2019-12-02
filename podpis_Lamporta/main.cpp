@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
   //sign.showKeyY();
   sign.signatureGenerate();
   //sign.showSignature();
-//weryfikacja podpisu 
+//weryfikacja podpisu
   LamportSignature sign2("tekst.txt","podpis.bin");
   //sign2.showKeyY();
   sign2.signatureVerify("podpis.bin");

@@ -26,7 +26,6 @@ class LamportSignature
 {
   unsigned char *d;// dlugosc N
   unsigned char X[N2][N];
-  unsigned char Y[N2][N];
   unsigned char s[N*8][N];
   unsigned int d_len;
   unsigned int y_len;
@@ -45,10 +44,11 @@ class LamportSignature
   static iwrc documents_visitor(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step);
   static iwrc documents_visitor2(EJDB_EXEC *ctx, const EJDB_DOC doc, int64_t *step);
   public:
-    LamportSignature(string messageFileName); // tworzenie podpisu
+    unsigned char Y[N2][N];
+    LamportSignature(); // tworzenie podpisu
     LamportSignature(string messageFileName,string signatureFile); //weryfikacja podpisu
     void keyGenerate();
-    void signatureGenerate();
+    void signatureGenerate(string messageFileName);
     void signatureVerify(string fileName);
     void showKeyX();
     void showKeyY();

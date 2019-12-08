@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
   //sign2.showKeyY();
   //sign2.signatureVerify("podpis.bin");
 
-  MerkleSignature mSign(8);
+  MerkleSignature mSign(2);
   mSign.keysGenerate();
   mSign.publicKeyGenerate();
   mSign.showPublicKey();

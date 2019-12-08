@@ -18,10 +18,7 @@ void MerkleSignature::keysGenerate(){
   for(int i=0;i<singsNumber;i++){
     signs[i].keyGenerate();
     cout<<"KLUCZ "<<i<<endl;
-    //signs[i].showKeyY();
-    //cout<<endl<<endl;
   }
-  //signs[0].showKeyY();
   cout<<endl<<endl;
 }
 void MerkleSignature::showPublicKey(){
@@ -35,12 +32,6 @@ void MerkleSignature::showPublicKey(){
 void MerkleSignature::publicKeyGenerate(){
   cout<<"Generowanie klucza publicznego"<<endl;
   Node* p = treehash(0,H);
-  /*for (int i = 0; i < N2; i++){
-    for(int j = 0; j < N; j++)
-      printf("%02x", p->V[i][j]);
-    cout<<endl;
-  }*/
-  //publicKey = p->V;
   memcpy(publicKey, p->V, sizeof publicKey);
   delete p;
 }
@@ -61,7 +52,6 @@ Node* MerkleSignature::treehash(int startNode, int maxheight){
         if(nP->height == maxheight){
           cout<<"Korzen:\t"<<"\t"<<nP->height<<endl;
           return nP;
-          //break;
         }
         tree.push(nP);
       }
@@ -110,9 +100,37 @@ Node* MerkleSignature::calcLeaf(int index){
   return n;
 }
 Node* MerkleSignature::calcNode(Node* nL,Node* nR){
+  cout<<"Nowy wezel "<<endl;
   Node* n = new Node;
   n->height = nL->height+1;
-  cout<<"Nowy wezel"<<endl;
+
+  unsigned int len;
+  for(int i =0; i < N2; i++){
+    unsigned char valuePom[N*2];
+    memcpy(valuePom, nL->V[i],N);
+    memcpy(valuePom+sizeof(nL->V[i]),nR->V[i],N);
+    /*cout<<"LEWY"<<endl;
+      for(int j = 0; j < N; j++)
+        printf("%02x", nL->V[0][j]);
+      cout<<endl<<"PRAWY"<<endl;;
+      for(int j = 0; j < N; j++)
+        printf("%02x", nR->V[0][j]);
+      cout<<endl<<"RAZEM"<<endl;
+      for(int j = 0; j < N*2; j++)
+        printf("%02x", valuePom[j]);
+      cout<<endl;*/
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    if(ctx == NULL)
+      error();
+    if(EVP_DigestInit_ex(ctx,EVP_sha3_256(),NULL) != 1)
+      error();
+    if(EVP_DigestUpdate(ctx,valuePom,N*2) != 1)
+      error();
+    if(EVP_DigestFinal_ex(ctx,n->V[i],&len) != 1)
+      error();
+    EVP_MD_CTX_free(ctx);
+  }
+
   return n;
 }
 void MerkleSignature::error(){

@@ -133,6 +133,31 @@ Node* MerkleSignature::calcNode(Node* nL,Node* nR){
 
   return n;
 }
+void MerkleSignature::signatureGenerate(string messageFileName){
+  cout<<"Generowanie podpisu Merkle'a"<<endl;
+  signature.index = 0;// zrobić generowanie indeksu
+  signs[signature.index].signatureGenerate(messageFileName);//generowanie podpisu OTS
+  //signs[signature.index].showSignature();
+  memcpy(signature.ots, signs[signature.index].s, sizeof signs[signature.index].s);
+  memcpy(signature.Y, signs[signature.index].Y, sizeof signs[signature.index].Y);
+  //generowanie ścieżki uwierzytelniania
+  //authenticationPathGenerate(signature.index);
+}
+void MerkleSignature::authenticationPathGenerate(int index){
+  cout<<"Generowanie ścieżki uwierzytelniającej"<<endl;
+  signature.authenticationPath = new Node*[H];
+  for(int h=0;h<H;h++){
+    int pom = index/pow(2,h);
+    if((pom%2)==1){
+      cout<<"V"<<h<<(index/pow(2,h)-1)<<endl;
+      cout<<"Start liść: "<<pow(2,h)<<endl;
+    }
+    else{
+      cout<<"V"<<h<<(index/pow(2,h)+1)<<endl;
+      cout<<"Start liść: "<<pow(2,h)<<endl;
+    }
+  }
+}
 void MerkleSignature::error(){
   ERR_print_errors_fp(stderr);
   abort();

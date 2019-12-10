@@ -70,7 +70,7 @@ void LamportSignature::keyYGenerate(){
   }
 }
 void LamportSignature::signatureGenerate(string messageFileName){
-  cout<<"Generowanie podpisu"<<endl;
+  cout<<"Generowanie podpisu Lamporta"<<endl;
   string M;
   M = readMessageFromFile(messageFileName);
   //cout<<"Wiadomość:"<<endl<<M<<endl;

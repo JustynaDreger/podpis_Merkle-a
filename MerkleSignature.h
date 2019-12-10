@@ -11,6 +11,12 @@ struct Node{
   unsigned char V[N2][N];
 };
 
+struct Signature{
+  int index;
+  unsigned char ots[N*8][N];
+  unsigned char Y[N2][N];
+  Node **authenticationPath;
+};
 class MerkleSignature
 {
   int H;// wysokość drzewa
@@ -18,7 +24,9 @@ class MerkleSignature
   unsigned char publicKey[N2][N];
   //tablice podpisów ots
   LamportSignature *signs;
-
+  Signature signature;
+  //generowanie ścieżki uwierzytelniania
+  void authenticationPathGenerate(int index);
   void error();
   public:
     //tworzenie podpisu H
@@ -33,6 +41,9 @@ class MerkleSignature
      Node* calcLeaf(int index);
      //obliczanie wartości nowego węzła
      Node* calcNode(Node* nL,Node* nR);
+     //generowanie podpisu
+     void signatureGenerate(string messageFileName);
+
      void showPublicKey();
      ~MerkleSignature();
 };

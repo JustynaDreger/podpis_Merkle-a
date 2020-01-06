@@ -170,6 +170,9 @@ void MerkleSignature::signatureGenerate(string messageFileName){
   memcpy(signature.Y, signs[signature.index].Y, sizeof signs[signature.index].Y);
   //generowanie ścieżki uwierzytelniania
   authenticationPathGenerate(signature.index);
+
+  //zapis do pliku
+  saveSignatureIntoFile();
 }
 void MerkleSignature::authenticationPathGenerate(int index){
   cout<<"Generowanie ścieżki uwierzytelniającej"<<endl;
@@ -189,6 +192,21 @@ void MerkleSignature::authenticationPathGenerate(int index){
       signature.authenticationPath[h] = &hashTree[h][a];
     }
   }
+}
+void MerkleSignature::saveSignatureIntoFile(){
+  FILE *fp = fopen("podpisMerklea.bin","wb");
+  //fprintf(fp,"%d\n",keyId);
+  //zapis indexu
+  fprintf(fp,"%d\n",signature.index);
+  //zapis ots
+  fwrite(signature.ots,sizeof(char),N*8*N,fp);
+  //zapis klucza publicznego ots Y
+  fwrite(signature.Y,sizeof(char),N2*N,fp);
+  for(int i=0;i<H;i++){
+    fwrite(signature.authenticationPath[i]->V,sizeof(char),N2*N,fp);
+  }
+  fclose(fp);
+  cout<<"Podpis zapisano do pliku: podpisMerklea.bin"<<endl;
 }
 void MerkleSignature::showHashTree(){
   for(int i=0; i<8;i++){

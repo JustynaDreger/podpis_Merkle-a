@@ -158,11 +158,11 @@ void LamportSignature::showSignature(){
   }
 }
 void LamportSignature::saveSignatureIntoFile(){
-  FILE *fp = fopen("podpis.bin","wb");
+  FILE *fp = fopen("podpisLamporta.bin","wb");
   fprintf(fp,"%d\n",keyId);
   fwrite(s,sizeof(char),N*8*N,fp);
   fclose(fp);
-  cout<<"Podpis zapisano do pliku: podpis.bin"<<endl;
+  cout<<"Podpis zapisano do pliku: podpisLamporta.bin"<<endl;
 }
 void LamportSignature::readSignatureFromFile(string fileName){
   FILE *fp = fopen(fileName.c_str(),"rb");

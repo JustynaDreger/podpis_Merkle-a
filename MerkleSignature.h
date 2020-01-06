@@ -33,6 +33,16 @@ class MerkleSignature
   //generowanie ścieżki uwierzytelniania
   void authenticationPathGenerate(int index);
   void error();
+  //inicjalizacja drzewa skótów
+  Node** initHashTree();
+  //zapis podpisu do pliku
+  void saveSignatureIntoFile();
+  //algorytm treehash - obliczanie węzła na danej wysokości i liścia
+  Node* treehash(int height);
+  //obliczanie wartości liścia
+  Node* calcLeaf(int index);
+  //obliczanie wartości nowego węzła
+  Node* calcNode(Node* nL,Node* nR, int index);
   public:
     //tworzenie podpisu H
      MerkleSignature(int H);
@@ -40,16 +50,8 @@ class MerkleSignature
      void keysGenerate();
      //obliczanie korzenia drzewa - klucza publicznego
      void publicKeyGenerate();
-     //inicjalizacja drzewa skótów
-     Node** initHashTree();
      //wypisanie drzewa
      void showHashTree();
-     //algorytm treehash - obliczanie węzła na danej wysokości i liścia
-     Node* treehash(int height);
-     //obliczanie wartości liścia
-     Node* calcLeaf(int index);
-     //obliczanie wartości nowego węzła
-     Node* calcNode(Node* nL,Node* nR, int index);
      //generowanie podpisu
      void signatureGenerate(string messageFileName);
 

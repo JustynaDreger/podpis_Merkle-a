@@ -2,6 +2,7 @@
 #include<cmath>
 #include<stack>
 #include "podpis_Lamporta/LamportSignature.h"
+#include "MerkleTree.h"
 using namespace std;
 #define N 32
 #define N2 N*16

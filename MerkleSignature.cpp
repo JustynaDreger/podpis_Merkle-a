@@ -12,6 +12,7 @@ MerkleSignature::MerkleSignature(int n)
     cout<<"Błędny argument! argument musi być potęgą liczby 2."<<endl;
   }
   signs = new LamportSignature[singsNumber];
+  hashTree=initHashTree();
 }
 void MerkleSignature::keysGenerate(){
   cout<<"Generowanie kluczy"<<endl;
@@ -20,6 +21,18 @@ void MerkleSignature::keysGenerate(){
     cout<<"KLUCZ "<<i<<endl;
   }
   cout<<endl<<endl;
+}
+Node** MerkleSignature::initHashTree(){
+  cout<<endl<<endl<<"INIT"<<endl;
+  Node **tree = new Node* [H];
+  int a;
+  for(int i=0;i<H;i++){
+    //cout<<8/pow(2,i)<<endl;
+    a = 8/pow(2,i);
+    cout<<a<<endl;
+    tree[i] = new Node[a];
+  }
+  return tree;
 }
 void MerkleSignature::showPublicKey(){
   cout<<endl<<"Klucz publiczny"<<endl;
@@ -31,12 +44,15 @@ void MerkleSignature::showPublicKey(){
 }
 void MerkleSignature::publicKeyGenerate(){
   cout<<"Generowanie klucza publicznego"<<endl;
-  Node* p = treehash(0,H);
+  Node* p = treehash(H);
   memcpy(publicKey, p->V, sizeof publicKey);
   delete p;
 }
-Node* MerkleSignature::treehash(int startNode, int maxheight){
-  int leaf = startNode;
+Node* MerkleSignature::treehash(int maxheight){
+  int leaf = 0;
+  int *index = new int[maxheight-1];
+  for(int i = 0; i<maxheight-1; i++)
+    index[i] = 0;
   stack<Node*> tree;
   do{
     Node* nR;
@@ -48,7 +64,10 @@ Node* MerkleSignature::treehash(int startNode, int maxheight){
       tree.pop();
       if(nL->height == nR->height){
         cout<<"Obliczanie nowego wezla dla wysokosci: "<<nR->height+1<<endl;
-        Node* nP = calcNode(nL,nR);
+        //cout<<index[nR->height]<<"POOM"<<endl;
+        Node* nP = calcNode(nL,nR, index[nR->height]);
+
+        index[nP->height-1]++;
         if(nP->height == maxheight){
           cout<<"Korzen:\t"<<"\t"<<nP->height<<endl;
           return nP;
@@ -97,12 +116,17 @@ Node* MerkleSignature::calcLeaf(int index){
   }
 
   cout<<"Lisc:\t"<<index<<endl;
+
+  hashTree[0][index].height = n->height;
+  memcpy(hashTree[0][index].V, n->V, sizeof hashTree[0][index].V);
+
   return n;
 }
-Node* MerkleSignature::calcNode(Node* nL,Node* nR){
+Node* MerkleSignature::calcNode(Node* nL,Node* nR, int index){
   cout<<"Nowy wezel "<<endl;
   Node* n = new Node;
-  n->height = nL->height+1;
+  int h = nL->height+1;
+  n->height = h;
 
   unsigned int len;
   for(int i =0; i < N2; i++){
@@ -131,6 +155,10 @@ Node* MerkleSignature::calcNode(Node* nL,Node* nR){
     EVP_MD_CTX_free(ctx);
   }
 
+  if(h<H){
+    hashTree[h][index].height = n->height;
+    memcpy(hashTree[h][index].V, n->V, sizeof hashTree[h][index].V);
+  }
   return n;
 }
 void MerkleSignature::signatureGenerate(string messageFileName){
@@ -141,7 +169,7 @@ void MerkleSignature::signatureGenerate(string messageFileName){
   memcpy(signature.ots, signs[signature.index].s, sizeof signs[signature.index].s);
   memcpy(signature.Y, signs[signature.index].Y, sizeof signs[signature.index].Y);
   //generowanie ścieżki uwierzytelniania
-  //authenticationPathGenerate(signature.index);
+  authenticationPathGenerate(signature.index);
 }
 void MerkleSignature::authenticationPathGenerate(int index){
   cout<<"Generowanie ścieżki uwierzytelniającej"<<endl;
@@ -150,12 +178,27 @@ void MerkleSignature::authenticationPathGenerate(int index){
     int pom = index/pow(2,h);
     if((pom%2)==1){
       cout<<"V"<<h<<(index/pow(2,h)-1)<<endl;
+      int a =index/pow(2,h)-1;
       cout<<"Start liść: "<<pow(2,h)<<endl;
+      signature.authenticationPath[h] = &hashTree[h][a];
     }
     else{
       cout<<"V"<<h<<(index/pow(2,h)+1)<<endl;
+      int a =index/pow(2,h)+1;
       cout<<"Start liść: "<<pow(2,h)<<endl;
+      signature.authenticationPath[h] = &hashTree[h][a];
     }
+  }
+}
+void MerkleSignature::showHashTree(){
+  for(int i=0; i<8;i++){
+    cout<<i<<"\t"<<hashTree[0][i].height<<endl;
+  }
+  for(int i=0; i<4;i++){
+    cout<<i<<"\t"<<hashTree[1][i].height<<endl;
+  }
+  for(int i=0; i<2;i++){
+    cout<<i<<"\t"<<hashTree[2][i].height<<endl;
   }
 }
 void MerkleSignature::error(){
@@ -164,4 +207,8 @@ void MerkleSignature::error(){
 }
 MerkleSignature::~MerkleSignature(){
   delete[] signs;
+  for (int i=0;i<H;i++){
+    delete[] hashTree[i];
+  }
+  delete[] hashTree;
 }

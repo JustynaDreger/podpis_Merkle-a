@@ -21,6 +21,8 @@ int main(int argc, char *argv[]){
   MerkleSignature mSign(8);
   mSign.keysGenerate();
   mSign.publicKeyGenerate();
+  cout<<"DRZEWOOOOO"<<endl;
+  mSign.showHashTree();
   //mSign.showPublicKey();
   mSign.signatureGenerate("tekst.txt");
   return 0;

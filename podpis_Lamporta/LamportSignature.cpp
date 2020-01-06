@@ -93,7 +93,7 @@ void LamportSignature::signatureGenerate(string messageFileName){
   saveIntoDataBase();
   saveSignatureIntoFile();
 }
-void LamportSignature::signatureVerify(string fileName){
+int LamportSignature::signatureVerify(string fileName){
   cout<<endl<<"Weryfikacja podpisu"<<endl;
   unsigned char fs[N*8][N];
   unsigned int fs_len;
@@ -119,14 +119,15 @@ void LamportSignature::signatureVerify(string fileName){
         //printf("%02x\n",fs[fs_num][0]);
         //cout<<"Y[k+l]";
         //printf("%02x\n", Y[k+l][0]);
-        cout<<"Podpis jest BŁĘDNY"<<endl;
-        return;
+        cout<<"Podpis Lamporta jest BŁĘDNY"<<endl;
+        return 1;
       }
       fs_num++;
       k+=2;
     }
   }
-  cout<<"Podpis jest POPRAWNY"<<endl;
+  cout<<"Podpis Lamporta jest POPRAWNY"<<endl;
+  return 0;
 }
 void LamportSignature::showDigest(){
   cout<<"Skrot :"<<endl;

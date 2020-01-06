@@ -21,9 +21,11 @@ int main(int argc, char *argv[]){
   MerkleSignature mSign(8);
   mSign.keysGenerate();
   mSign.publicKeyGenerate();
-  cout<<"DRZEWOOOOO"<<endl;
-  mSign.showHashTree();
+  //cout<<"DRZEWOOOOO"<<endl;
+  //mSign.showHashTree();
   //mSign.showPublicKey();
   mSign.signatureGenerate("tekst.txt");
+
+  mSign.signatureVerify("podpisLamporta.bin","tekst.txt");
   return 0;
 }

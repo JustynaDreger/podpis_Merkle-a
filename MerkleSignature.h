@@ -37,10 +37,13 @@ class MerkleSignature
   Node** initHashTree();
   //zapis podpisu do pliku
   void saveSignatureIntoFile();
+  //odczyt podpisu z pliku
+  void readSignatureFromFile(string fileName);
   //algorytm treehash - obliczanie węzła na danej wysokości i liścia
   Node* treehash(int height);
   //obliczanie wartości liścia
   Node* calcLeaf(int index);
+  Node* calcPLeaf();
   //obliczanie wartości nowego węzła
   Node* calcNode(Node* nL,Node* nR, int index);
   public:
@@ -54,7 +57,11 @@ class MerkleSignature
      void showHashTree();
      //generowanie podpisu
      void signatureGenerate(string messageFileName);
-
      void showPublicKey();
+     //weryfikacja podpisu
+     void signatureVerify(string fileName, string messageFileName);
+     //weryfikacja klucza Y
+     int keyYVerify();
+
      ~MerkleSignature();
 };

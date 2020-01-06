@@ -154,7 +154,7 @@ Node* MerkleSignature::calcNode(Node* nL,Node* nR, int index){
       error();
     EVP_MD_CTX_free(ctx);
   }
-
+  if(index == 0) return n;
   if(h<H){
     hashTree[h][index].height = n->height;
     memcpy(hashTree[h][index].V, n->V, sizeof hashTree[h][index].V);
@@ -208,6 +208,16 @@ void MerkleSignature::saveSignatureIntoFile(){
   fclose(fp);
   cout<<"Podpis zapisano do pliku: podpisMerklea.bin"<<endl;
 }
+void MerkleSignature::readSignatureFromFile(string fileName){
+  FILE *fp = fopen(fileName.c_str(),"rb");
+  fscanf(fp,"%d\n",&signature.index);
+  fread(&signature.ots,sizeof(char),N*8*N,fp);
+  fread(&signature.Y,sizeof(char),N2*N,fp);
+  for(int i=0;i<H;i++){
+    fread(&signature.authenticationPath[i]->V,sizeof(char),N2*N,fp);
+  }
+  fclose(fp);
+}
 void MerkleSignature::showHashTree(){
   for(int i=0; i<8;i++){
     cout<<i<<"\t"<<hashTree[0][i].height<<endl;
@@ -229,4 +239,57 @@ MerkleSignature::~MerkleSignature(){
     delete[] hashTree[i];
   }
   delete[] hashTree;
+}
+void MerkleSignature::signatureVerify(string fileName, string messageFileName){
+  //werifikacja podpisu ots
+  LamportSignature sign(messageFileName,fileName);
+  int czy = sign.signatureVerify(fileName);
+  if(czy==0){
+    //cout<<"TAAAAAK"<<endl;
+    int czy2 = keyYVerify();
+    if(czy2 == 0){
+      cout<<"Podpis Merkle'a jest poprawny"<<endl;
+    }
+    else{
+      cout<<"Podpis Merkle'a nie jest poprawny"<<endl;
+    }
+  }
+}
+int MerkleSignature::keyYVerify(){
+  Node* p;
+  p = calcPLeaf();
+  for(int h=0;h<H;h++){
+    int pom = signature.index/pow(2,h-1);
+    if((pom%2)==1){
+      p = calcNode(signature.authenticationPath[h],p,0);
+    }
+    else{
+      p = calcNode(p,signature.authenticationPath[h],0);
+    }
+  }
+  for(int i=0;i<N2;i++){
+      if(memcmp(p->V[i],publicKey[i],N) != 0){
+        return 1;
+      }
+  }
+  return 0;
+}
+Node* MerkleSignature::calcPLeaf(){
+  Node* n = new Node;
+  n->height = 0;
+  //unsigned char pom[N2][N] = signs[index].Y;
+  unsigned int len;
+  for(int i =0; i < N2; i++){
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    if(ctx == NULL)
+      error();
+    if(EVP_DigestInit_ex(ctx,EVP_sha3_256(),NULL) != 1)
+      error();
+    if(EVP_DigestUpdate(ctx,signature.Y[i],N) != 1)
+      error();
+    if(EVP_DigestFinal_ex(ctx,n->V[i],&len) != 1)
+      error();
+    EVP_MD_CTX_free(ctx);
+  }
+  return n;
 }

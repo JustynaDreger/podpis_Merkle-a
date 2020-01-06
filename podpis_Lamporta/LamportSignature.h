@@ -49,7 +49,7 @@ class LamportSignature
     LamportSignature(string messageFileName,string signatureFile); //weryfikacja podpisu
     void keyGenerate();
     void signatureGenerate(string messageFileName);
-    void signatureVerify(string fileName);
+    int signatureVerify(string fileName);
     void showKeyX();
     void showKeyY();
     void showSignature();

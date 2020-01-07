@@ -1,6 +1,9 @@
 #include<iostream>
 #include<cmath>
 #include<stack>
+#include <cstdlib>
+#include <ctime>
+
 #include "podpis_Lamporta/LamportSignature.h"
 
 using namespace std;
@@ -53,13 +56,11 @@ class MerkleSignature
      void keysGenerate();
      //obliczanie korzenia drzewa - klucza publicznego
      void publicKeyGenerate();
-     //wypisanie drzewa
-     void showHashTree();
      //generowanie podpisu
      void signatureGenerate(string messageFileName);
      void showPublicKey();
      //weryfikacja podpisu
-     void signatureVerify(string fileName, string messageFileName);
+     void signatureVerify(string fileNameM,string fileNameL, string messageFileName);
      //weryfikacja klucza Y
      int keyYVerify();
 

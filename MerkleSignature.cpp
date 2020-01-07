@@ -18,18 +18,16 @@ void MerkleSignature::keysGenerate(){
   cout<<"Generowanie kluczy"<<endl;
   for(int i=0;i<singsNumber;i++){
     signs[i].keyGenerate();
-    cout<<"KLUCZ "<<i<<endl;
+    //cout<<"KLUCZ "<<i<<endl;
   }
-  cout<<endl<<endl;
+  //cout<<endl<<endl;
 }
 Node** MerkleSignature::initHashTree(){
-  cout<<endl<<endl<<"INIT"<<endl;
   Node **tree = new Node* [H];
   int a;
   for(int i=0;i<H;i++){
-    //cout<<8/pow(2,i)<<endl;
     a = 8/pow(2,i);
-    cout<<a<<endl;
+    //cout<<a<<endl;
     tree[i] = new Node[a];
   }
   return tree;
@@ -63,13 +61,11 @@ Node* MerkleSignature::treehash(int maxheight){
       nL = tree.top();
       tree.pop();
       if(nL->height == nR->height){
-        cout<<"Obliczanie nowego wezla dla wysokosci: "<<nR->height+1<<endl;
-        //cout<<index[nR->height]<<"POOM"<<endl;
+        //cout<<"Obliczanie nowego wezla dla wysokosci: "<<nR->height+1<<endl;
         Node* nP = calcNode(nL,nR, index[nR->height]);
-
         index[nP->height-1]++;
         if(nP->height == maxheight){
-          cout<<"Korzen:\t"<<"\t"<<nP->height<<endl;
+          //cout<<"Korzen:\t"<<"\t"<<nP->height<<endl;
           return nP;
         }
         tree.push(nP);
@@ -77,7 +73,7 @@ Node* MerkleSignature::treehash(int maxheight){
       else{
         tree.push(nL);
         tree.push(nR);
-        cout<<"Nowa prara lisci"<<endl;
+        //cout<<"Nowa para lisci"<<endl;
         nL = calcLeaf(leaf);
         tree.push(nL);
         leaf++;
@@ -87,7 +83,7 @@ Node* MerkleSignature::treehash(int maxheight){
       }
     }
     else{
-      cout<<"Nowa para lisci"<<endl;
+      //cout<<"Nowa para lisci"<<endl;
       nL = calcLeaf(leaf);
       tree.push(nL);
       leaf++;
@@ -100,7 +96,6 @@ Node* MerkleSignature::treehash(int maxheight){
 Node* MerkleSignature::calcLeaf(int index){
   Node* n = new Node;
   n->height = 0;
-  //unsigned char pom[N2][N] = signs[index].Y;
   unsigned int len;
   for(int i =0; i < N2; i++){
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
@@ -114,16 +109,14 @@ Node* MerkleSignature::calcLeaf(int index){
       error();
     EVP_MD_CTX_free(ctx);
   }
-
-  cout<<"Lisc:\t"<<index<<endl;
-
+  //cout<<"Lisc:\t"<<index<<endl;
   hashTree[0][index].height = n->height;
   memcpy(hashTree[0][index].V, n->V, sizeof hashTree[0][index].V);
 
   return n;
 }
 Node* MerkleSignature::calcNode(Node* nL,Node* nR, int index){
-  cout<<"Nowy wezel "<<endl;
+  //cout<<"Nowy wezel "<<endl;
   Node* n = new Node;
   int h = nL->height+1;
   n->height = h;
@@ -133,16 +126,6 @@ Node* MerkleSignature::calcNode(Node* nL,Node* nR, int index){
     unsigned char valuePom[N*2];
     memcpy(valuePom, nL->V[i],N);
     memcpy(valuePom+sizeof(nL->V[i]),nR->V[i],N);
-    /*cout<<"LEWY"<<endl;
-      for(int j = 0; j < N; j++)
-        printf("%02x", nL->V[0][j]);
-      cout<<endl<<"PRAWY"<<endl;;
-      for(int j = 0; j < N; j++)
-        printf("%02x", nR->V[0][j]);
-      cout<<endl<<"RAZEM"<<endl;
-      for(int j = 0; j < N*2; j++)
-        printf("%02x", valuePom[j]);
-      cout<<endl;*/
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     if(ctx == NULL)
       error();
@@ -154,8 +137,8 @@ Node* MerkleSignature::calcNode(Node* nL,Node* nR, int index){
       error();
     EVP_MD_CTX_free(ctx);
   }
-  if(index == 0) return n;
-  if(h<H){
+
+  if(h<H && index!=-1){
     hashTree[h][index].height = n->height;
     memcpy(hashTree[h][index].V, n->V, sizeof hashTree[h][index].V);
   }
@@ -163,14 +146,15 @@ Node* MerkleSignature::calcNode(Node* nL,Node* nR, int index){
 }
 void MerkleSignature::signatureGenerate(string messageFileName){
   cout<<"Generowanie podpisu Merkle'a"<<endl;
-  signature.index = 0;// zrobić generowanie indeksu
-  signs[signature.index].signatureGenerate(messageFileName);//generowanie podpisu OTS
+  srand( time( NULL ) );
+  int idx= rand()%singsNumber;
+  signature.index = idx;
+  signs[idx].signatureGenerate(messageFileName);//generowanie podpisu OTS
   //signs[signature.index].showSignature();
-  memcpy(signature.ots, signs[signature.index].s, sizeof signs[signature.index].s);
-  memcpy(signature.Y, signs[signature.index].Y, sizeof signs[signature.index].Y);
+  memcpy(signature.ots, signs[idx].s, sizeof signs[idx].s);
+  memcpy(signature.Y, signs[idx].Y, sizeof signs[idx].Y);
   //generowanie ścieżki uwierzytelniania
-  authenticationPathGenerate(signature.index);
-
+  authenticationPathGenerate(idx);
   //zapis do pliku
   saveSignatureIntoFile();
 }
@@ -180,22 +164,19 @@ void MerkleSignature::authenticationPathGenerate(int index){
   for(int h=0;h<H;h++){
     int pom = index/pow(2,h);
     if((pom%2)==1){
-      cout<<"V"<<h<<(index/pow(2,h)-1)<<endl;
-      int a =index/pow(2,h)-1;
-      cout<<"Start liść: "<<pow(2,h)<<endl;
+      int a =(index/pow(2,h))-1;
       signature.authenticationPath[h] = &hashTree[h][a];
+      //cout<<"V"<<h<<a<<endl;
     }
     else{
-      cout<<"V"<<h<<(index/pow(2,h)+1)<<endl;
-      int a =index/pow(2,h)+1;
-      cout<<"Start liść: "<<pow(2,h)<<endl;
+      int a =(index/pow(2,h))+1;
       signature.authenticationPath[h] = &hashTree[h][a];
+      //cout<<"V"<<h<<a<<endl;
     }
   }
 }
 void MerkleSignature::saveSignatureIntoFile(){
   FILE *fp = fopen("podpisMerklea.bin","wb");
-  //fprintf(fp,"%d\n",keyId);
   //zapis indexu
   fprintf(fp,"%d\n",signature.index);
   //zapis ots
@@ -218,17 +199,6 @@ void MerkleSignature::readSignatureFromFile(string fileName){
   }
   fclose(fp);
 }
-void MerkleSignature::showHashTree(){
-  for(int i=0; i<8;i++){
-    cout<<i<<"\t"<<hashTree[0][i].height<<endl;
-  }
-  for(int i=0; i<4;i++){
-    cout<<i<<"\t"<<hashTree[1][i].height<<endl;
-  }
-  for(int i=0; i<2;i++){
-    cout<<i<<"\t"<<hashTree[2][i].height<<endl;
-  }
-}
 void MerkleSignature::error(){
   ERR_print_errors_fp(stderr);
   abort();
@@ -240,33 +210,36 @@ MerkleSignature::~MerkleSignature(){
   }
   delete[] hashTree;
 }
-void MerkleSignature::signatureVerify(string fileName, string messageFileName){
+void MerkleSignature::signatureVerify(string fileNameM,string fileNameL,string messageFileName){
+  cout<<"Weryfikacja podpisu Merkle'a"<<endl;
+  readSignatureFromFile(fileNameM);
+  //cout<<signature.index<<endl;
   //werifikacja podpisu ots
-  LamportSignature sign(messageFileName,fileName);
-  int czy = sign.signatureVerify(fileName);
+  LamportSignature sign(messageFileName,fileNameL);
+  int czy = sign.signatureVerify(fileNameL);
   if(czy==0){
-    //cout<<"TAAAAAK"<<endl;
     int czy2 = keyYVerify();
     if(czy2 == 0){
-      cout<<"Podpis Merkle'a jest poprawny"<<endl;
+      cout<<"Podpis Merkle'a jest POPRAWNY"<<endl;
     }
     else{
-      cout<<"Podpis Merkle'a nie jest poprawny"<<endl;
+      cout<<"Podpis Merkle'a jest BŁĘDNY"<<endl;
     }
   }
 }
 int MerkleSignature::keyYVerify(){
   Node* p;
   p = calcPLeaf();
-  for(int h=0;h<H;h++){
+  for(int h=1;h<=H;h++){
     int pom = signature.index/pow(2,h-1);
     if((pom%2)==1){
-      p = calcNode(signature.authenticationPath[h],p,0);
+      p = calcNode(signature.authenticationPath[h-1],p,-1);
     }
     else{
-      p = calcNode(p,signature.authenticationPath[h],0);
+      p = calcNode(p,signature.authenticationPath[h-1],-1);
     }
   }
+
   for(int i=0;i<N2;i++){
       if(memcmp(p->V[i],publicKey[i],N) != 0){
         return 1;
@@ -277,7 +250,6 @@ int MerkleSignature::keyYVerify(){
 Node* MerkleSignature::calcPLeaf(){
   Node* n = new Node;
   n->height = 0;
-  //unsigned char pom[N2][N] = signs[index].Y;
   unsigned int len;
   for(int i =0; i < N2; i++){
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();

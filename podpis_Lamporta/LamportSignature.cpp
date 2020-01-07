@@ -6,7 +6,6 @@ LamportSignature::LamportSignature(){
 LamportSignature::LamportSignature(string messageFileName,string signatureFile){
   string M;
   M = readMessageFromFile(messageFileName);
-  //cout<<"Wiadomość:"<<endl<<M<<endl;
   d_M(M);
   readSignatureFromFile(signatureFile);
   readFromDataBase();
@@ -45,7 +44,7 @@ void LamportSignature::error(){
   abort();
 }
 void LamportSignature::keyGenerate(){
-  cout<<endl<<"Generowanie kluczy"<<endl;
+  //cout<<endl<<"Generowanie kluczy"<<endl;
   keyXGenerate();
   keyYGenerate();
 }
@@ -73,9 +72,7 @@ void LamportSignature::signatureGenerate(string messageFileName){
   cout<<"Generowanie podpisu Lamporta"<<endl;
   string M;
   M = readMessageFromFile(messageFileName);
-  //cout<<"Wiadomość:"<<endl<<M<<endl;
   d_M(M);
-
   int k=0,l=0;
   for(int i=0; i<N;i++){
     bitset<8> D(d[i]);
@@ -94,7 +91,7 @@ void LamportSignature::signatureGenerate(string messageFileName){
   saveSignatureIntoFile();
 }
 int LamportSignature::signatureVerify(string fileName){
-  cout<<endl<<"Weryfikacja podpisu"<<endl;
+  cout<<"Weryfikacja podpisu Lamporta"<<endl;
   unsigned char fs[N*8][N];
   unsigned int fs_len;
   for(int i =0; i < N*8; i++){
@@ -115,10 +112,6 @@ int LamportSignature::signatureVerify(string fileName){
     for(int j = 7; j>=0; j--){
       int l = (int)D[j];
       if(memcmp(fs[fs_num],Y[k+l],N) != 0){
-        //cout<<"FS[fs_num]";
-        //printf("%02x\n",fs[fs_num][0]);
-        //cout<<"Y[k+l]";
-        //printf("%02x\n", Y[k+l][0]);
         cout<<"Podpis Lamporta jest BŁĘDNY"<<endl;
         return 1;
       }

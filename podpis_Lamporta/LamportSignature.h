@@ -45,8 +45,10 @@ class LamportSignature
   public:
     unsigned char Y[N2][N];
     unsigned char s[N*8][N];
-    LamportSignature(); // tworzenie podpisu
-    LamportSignature(string messageFileName,string signatureFile); //weryfikacja podpisu
+     // tworzenie podpisu
+    LamportSignature();
+    //weryfikacja podpisu
+    LamportSignature(string messageFileName,string signatureFile);
     void keyGenerate();
     void signatureGenerate(string messageFileName);
     int signatureVerify(string fileName);

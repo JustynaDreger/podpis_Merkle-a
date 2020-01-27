@@ -2,7 +2,7 @@
 
 MerkleSignature::MerkleSignature(int n)
 {
-  //http://graphics.stanford.edu/~seander/bithacks.html
+  //
   if(n && !(n & (n - 1))){
     singsNumber = n;
     H=log2(singsNumber);
@@ -18,9 +18,7 @@ void MerkleSignature::keysGenerate(){
   cout<<"Generowanie kluczy"<<endl;
   for(int i=0;i<singsNumber;i++){
     signs[i].keyGenerate();
-    //cout<<"KLUCZ "<<i<<endl;
   }
-  //cout<<endl<<endl;
 }
 Node** MerkleSignature::initHashTree(){
   Node **tree = new Node* [H];
